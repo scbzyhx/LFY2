@@ -117,7 +117,7 @@ class TPIs(object):
             return self.db[pn][0]
         return None
         
-    def get_pty(self,pn):
+    def get_qty(self,pn):
         if self.db.has_key(pn):
             return self.db[pn][1]
         return None
@@ -127,5 +127,5 @@ if __name__=="__main__":
     tpis = TPIs(u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\TPI\\")
     pns  = tpis.get_pns()
     for pn in pns:
-        print pn,"   ",tpis.get_unit_price(pn),"  ", tpis.get_pty(pn)
+        print pn,"   ",tpis.get_unit_price(pn),"  ", tpis.get_qty(pn)
         

@@ -5,7 +5,7 @@ import os
 
 from rworkbook import YRWorkbook
 
-logging.basicConfig()
+
 class PAC:
     
     PN_COL = "B"
@@ -105,6 +105,9 @@ class PACs(object):
                 self.db[k][pac.PCS] += pac.data[k][pac.PCS]
                 self.db[k][pac.NW] += pac.data[k][pac.NW]
                 self.db[k][pac.GW] += pac.data[k][pac.GW]
+    def show_pacs(self):
+        for k in self.db.keys():
+            print k," ",self.db[k]["pcs"]," " ,self.db[k]["nw"], "  ",self.db[k]["gw"]
     def get_pcs(self,pn):
         if self.db.has_key(pn):
             return self.db[pn][PAC.PCS]
@@ -119,8 +122,7 @@ if __name__=="__main__":
    #pac = PAC(u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\PAC\\Pac_CPVC64150720A05.xls","123")
    pacs = PACs(u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\PAC\\")
    #pac.printf()
-   for k in pacs.db.keys():
-       print k," ",pacs.db[k]["pcs"]," " ,pacs.db[k]["nw"], "  ",pacs.db[k]["gw"]
+   
        
    print pacs.get_pcs("Z0RJ000ET")
    print pacs.get_nw("Z0RJ000ET")
