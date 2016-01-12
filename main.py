@@ -7,6 +7,7 @@ from infodb import YInfoDB
 from pacs import PACs
 from export import Export
 from tpis import TPIs
+from output import OutputWorkbook
 
 
 TOP=u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\"
@@ -15,8 +16,14 @@ INFO_DB = TOP+u"规范申报数据库.xlsx"
 TPI_DIR = TOP+u"TPI\\"
 EXPORT = TOP+u"出口单价与数量.xlsx"
 PAC_DIR = TOP+u"PAC\\"
+TEMPLATE_FILE = TOP+u"空白模板.xlsx"
 ##initialize logging
 logging.basicConfig()
+
+MAX_PNS = 20
+
+NANO = u"NANO"
+PC = u"微型电脑主机"
 
 #
 #tpi_info is an instance of TPIs while ex_info is an instance of  Export
@@ -35,8 +42,9 @@ class ContractPrice:
         tpi_pns = tpi_info.get_pns()
         ex_pns = ex_info.get_pns()
         
-        if len(tpi_pns) != len(ex_pns):
-            return None
+        if len(tpi_pns) != len(ex_pns) or len(tpi_pns) > MAX_PNS:
+            self.ok = False
+            return 
         for pn in tpi_pns:
             in_price = tpi_info.get_unit_price(pn)
             ex_price = ex_info.get_unit_price(pn)
@@ -52,7 +60,7 @@ class ContractPrice:
             if in_price >= ex_price:
                 self.data[pn] = {self.PRICE:in_price, self.QTY:in_qty}
             else: #ex_price > in_price
-                self.data[pn] = {self.PRICE:ex_price*1.01,self.QTY:ex_qty}  #TODO: precious.##############
+                self.data[pn] = {self.PRICE:round(ex_price*1.01, 2),self.QTY:ex_qty}  #TODO: precisious, two decimal
         
     def process_pac(self,pac_info,**kwargs):
         pns = self.data.keys()
@@ -89,7 +97,35 @@ class ContractPrice:
         return True
     #return as tuples
     def get_data(self):
-        return None
+        return nano,normal, pc
+        
+    
+    def partition(self):
+        nano = []
+        normal = [] #each item is an tuple, (pn, code)
+        pc = [] #each item is an tuple(pn,code)
+        
+        for pn in self.data.keys():
+            desc = self.data[pn][self.DESC]
+            desc = desc.upper()
+            if desc.find(NANO):
+                desc_list = desc.split(" ")
+                desc_arr = desc_list[0:4]
+                desc = " ".desc_arr
+                self.data[pn][self.DESC] = desc #modify
+            elif desc.find(PC):
+                pc.append((pn,self.data[pn][self.CODE]))
+            else:
+                normal.append((pn,self.data[pn][self.CODE])) #to sorted
+        normal.sort(key=lambda s: s[1]) #according to code
+        pc.sort(key=lambda s: s[1])
+        
+        return nano, normal, pc
+        
+        
+
+        
+        
 def main():
     info_db = YInfoDB(INFO_DB)
     tpis_info = TPIs(TPI_DIR)    
@@ -109,6 +145,9 @@ def main():
         print "Error when process info db"
         return 
     c_price.show_contract_price()
+    
+    outbook = OutputWorkbook(TEMPLATE_FILE)
+    
     
     
     print "success"
