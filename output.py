@@ -9,6 +9,7 @@ from contract import Contract
 from invoice import Invoice
 from details import Details
 
+
 class OutputWorkbook:
     CONTRACT_SHEET = u"合同"
     INVOICE_SHEET = u"箱单发票"
@@ -24,7 +25,7 @@ class OutputWorkbook:
         self.details = Details(self.wb.get_sheet_by_name(self.DETAILS_SHEET))
         
     def get_contract_sheet(self):
-        return contract
+        return self.contract
     def get_invoice_sheet(self):
         return self.invoice
     def get_detail_sheet(self):
@@ -33,7 +34,15 @@ class OutputWorkbook:
     def save(self,dest=None):
         if dest is None:
             dest = self.template
+        
+        self.contract.fix_borders()
+        self.details.fix_borders()
         #save here
+        self.contract.remove_empty_rows()
+        self.invoice.remove_empty_rows()
+        self.details.remove_empty_rows()
+        
+        self.wb.save(dest)
 
 if __name__=="__main__":
     pass

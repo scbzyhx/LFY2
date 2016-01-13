@@ -5,9 +5,11 @@ import os
 from openpyxl import load_workbook
 from rworkbook import YRWorkbook
 MAX_TIMES = 5
-logging.basicConfig()
+#logging.basicConfig()
 #LOG = logging.getLogger(__name__)
 #LOG.setLevel(logging.DEBUG)
+import utils
+
 class TPI(object):
     PN_COL = "A"
     DESC_COL = "B"
@@ -24,7 +26,7 @@ class TPI(object):
         self.hwab = hwab
         self.data = {} #pn: [mxprice,sum of pty] #does we need extend
         self.logger = logging.getLogger("TPI")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(utils.LOG_LEVEL)
         #print self.hwab
         
         self._process_tpi()
@@ -38,7 +40,7 @@ class TPI(object):
             #ind = self.START_ROW
             wb.pin_sheet_by_name(name)
             nrows = wb.get_nrows()
-            self.logger.info(name)
+            self.logger.debug(name)
             for ind in xrange(self.START_ROW, nrows):
                 pn = wb.get_cell_value(self.PN_COL+str(ind))
                 qty = wb.get_cell_value(self.QTY_COL+str(ind))
@@ -59,14 +61,14 @@ class TPI(object):
                 if not self.data.has_key(pn):
                     self.data[pn] = [0,0]
                 if uprice[0] != "$":
-                    self.logger.info("pn=%s, unit_price=%s, pty=%s",pn, uprice, qty)
+                    self.logger.debug("pn=%s, unit_price=%s, pty=%s",pn, uprice, qty)
                     assert 0, "Unit_Price Error, unit price shuold start with $"
                     
                 self.data[pn][0] = max(self.data[pn][0],float(uprice[1:]))
                 assert int(qty) > 0
                 self.data[pn][1] += int(qty)
                 
-                self.logger.info("pn=%s, unit_price=%f, pty=%d",pn, float(uprice[1:]), int(qty))
+                self.logger.debug("pn=%s, unit_price=%f, pty=%d",pn, float(uprice[1:]), int(qty))
     def print_sumary(self):
         for k in self.data.keys():
             self.logger.debug("Statistics:hwab = %s, pn=%s, unit_price=%f, pty=%d",self.hwab, k, self.data[k][0], self.data[k][1])
@@ -76,7 +78,7 @@ class TPIs(object):
     def __init__(self,dir, **kwargs):
         self.dir = dir
         self.logger = logging.getLogger(str(self.__class__))
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(utils.LOG_LEVEL)
         self.tpi_list = []
         self.db = {}
         self._process(self.dir)
@@ -85,7 +87,7 @@ class TPIs(object):
         files = os.listdir(dir)
         #print files
         for fl in files:
-            print fl
+            self.logger.info(fl)
             if os.path.isfile(dir+fl) == False:
                 self.logger.info("illegal file %s" % (dir+fl))
                 continue

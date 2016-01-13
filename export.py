@@ -37,7 +37,7 @@ class Export:
                 self.db[pn][0] = max(self.db[pn][0],uprice)
                 self.db[pn][1] += qty
                 
-                print pn,qty,uprice
+                #print pn,qty,uprice
                 #print type(pn)," ", type(qty), "  ",type(uprice)
     def get_unit_price(self,pn):
         if self.db.has_key(pn):
