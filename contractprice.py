@@ -37,7 +37,7 @@ class ContractPrice:
                 self.ok = False
                 self.data = {} #clear
                 break
-            assert in_qty == ex_qty
+            assert in_qty == ex_qty #modify it here
             
             if in_price >= ex_price:
                 self.data[pn] = {self.PRICE:in_price, self.QTY:in_qty}

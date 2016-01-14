@@ -17,6 +17,8 @@ class TPI(object):
     UNIT_PRICE_COL = "K"
     EXTENDED_COL = "L"
     
+    HAWB_POS = "A9"
+    
     START_ROW = 13 #why start from 13
     
     END_STR = "Total"
@@ -28,9 +30,22 @@ class TPI(object):
         self.logger = logging.getLogger("TPI")
         self.logger.setLevel(utils.LOG_LEVEL)
         #print self.hwab
-        
+        self.hawb = 0
         self._process_tpi()
+    def _get_hawb(self,s):
+        #print s
+        self.hawb = s.split("#")[-1].strip()
+        #print self.hawb
+        assert self.hawb != ""
+    def get_hawb(self):
+        return self.hawb
         
+    def get_pns(self):
+        return self.data.keys()
+    def get_qty(self,pn):
+        if self.data.has_key(pn):
+            return self.data[pn][1]
+    
     def _process_tpi(self):
         wb = YRWorkbook(self.filename)
         names = wb.get_sheet_names()
@@ -41,6 +56,7 @@ class TPI(object):
             wb.pin_sheet_by_name(name)
             nrows = wb.get_nrows()
             self.logger.debug(name)
+            self._get_hawb(wb.get_cell_value(self.HAWB_POS))
             for ind in xrange(self.START_ROW, nrows):
                 pn = wb.get_cell_value(self.PN_COL+str(ind))
                 qty = wb.get_cell_value(self.QTY_COL+str(ind))
@@ -123,6 +139,9 @@ class TPIs(object):
         if self.db.has_key(pn):
             return self.db[pn][1]
         return None
+        
+    def get_all_tpi(self):
+        return self.tpi_list
                 
 if __name__=="__main__":
     #tpi =  TPI("C:\\Users\\yanghaixiang\\Documents\\GitHub\\TPI_VC70160106A07.xls","123")

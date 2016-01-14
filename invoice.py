@@ -40,13 +40,16 @@ class Invoice(object):
     	if self.row >= self.ROW_END:
     	#	print "PN overflow"
             self.logger.error(u"列数超过了 20 个")
-            utils.show_abort()
+            #utils.show_abort()
             sys.exit(-1)
     		
     	self.row += 1    	
     	for i in xrange(len(self.RECORD_NAME)):
-    		val = kwargs.get(self.RECORD_NAME[i],None)
-    		assert val != None, "Value of (%s) error when insert into invoice: "  % self.RECORD_NAME[i]#directly end
+            val = kwargs.get(self.RECORD_NAME[i],None)
+            if val is None:
+                self.logger.error("Value of (%s) error when insert into invoice: ",self.RECORD_NAME[i])
+                sys.exit(-1)
+    		#assert val != None, #directly end
     		self.sheet[cols[i]] = val
     	return (0,"ok")
     def remove_empty_rows(self): #copy

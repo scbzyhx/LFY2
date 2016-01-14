@@ -10,10 +10,11 @@ from export import Export
 from tpis import TPIs
 from output import OutputWorkbook
 from contractprice import ContractPrice
+from hawb import Account, HAWB
 
 import utils
 #TOP=u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\"
-TOP=u"..\\workspace\\"
+TOP=u".\\workspace\\"
 INPUT=TOP+u"INPUT\\"
 OUTPUT=TOP+u"OUTPUT\\"
 
@@ -25,6 +26,8 @@ PAC_DIR = INPUT+u"PAC\\"
 TEMPLATE_FILE = TOP+u"模板.xlsx"
 CONTRACT_ID = None
 DEST_FILE = OUTPUT#+u"sample.xlsx"
+ACCOUNT_FILE = OUTPUT+u"记账.xlsx"
+HAWB_FILE = OUTPUT+u"HAWB.xlsx"
 
 ##initialize logging
 logging.basicConfig()
@@ -144,8 +147,28 @@ def process_others(ct,dt,it,contract_id,pacs,cprice):
     dt.set_total_qty(total_qty)
     dt.set_total_amount(total_amount)
     
-        
+def save_account(tpis, exports, contracts):
+    accounts = Account(ACCOUNT_FILE)
     
+    pns = contracts.get_pns()
+    for pn in pns:
+        iprice = tpis.get_unit_price(pn)
+        oprice = exports.get_unit_price(pn)
+        cprice = contracts.get_price(pn)
+        
+        accounts.insert_record(CONTRACT_ID,pn,iprice,oprice,cprice)
+    accounts.save()#save files
+
+def save_hawb_total(tpis, contracts):
+    all_tpi =  tpis.get_all_tpi()
+    hawb = HAWB(HAWB_FILE)
+    for tpi in all_tpi:
+        amount = 0
+        pns = tpi.get_pns()
+        for pn in pns:
+            amount += tpi.get_qty(pn)*contracts.get_price(pn)
+        hawb.insert_record(CONTRACT_ID,tpi.get_hawb(),amount)
+    hawb.save()
     
 def main():
     info_db = YInfoDB(INFO_DB)
@@ -191,6 +214,9 @@ def main():
     
     outbook.save(DEST_FILE)
     
+    ##now accouting
+    save_account(tpis_info,exports,c_price)
+    save_hawb_total(tpis_info,c_price)
     print u"处理成功!!"
     utils.pause()
 def find_contract_id():

@@ -28,6 +28,7 @@ class Details(object):
         self.sheet = sheet #complete here
         self.row = self.ROW_START
         self.logger = logging.getLogger(str(self.__class__))
+        self.logger.setLevel(utils.LOG_LEVEL)
 		
     #maybe more check here
     def insert_record(self, **kwargs):
@@ -41,7 +42,10 @@ class Details(object):
             self.row += 1    	
             for i in xrange(len(self.RECORD_NAME)):
                 val = kwargs.get(self.RECORD_NAME[i],None)
-                assert val != None, "Value of (%s) error when insert into invoice: "  % self.RECORD_NAME[i]  #directly end
+                if val == None:
+                    self.logger.error("Value of (%s) error when insert into invoice ", self.RECORD_NAME[i] )
+                    sys.exit(-1)
+                    #assert val != None,  #directly end
                 self.sheet[cols[i]] = val
             return 0
 
