@@ -96,12 +96,12 @@ class ContractPrice:
                 desc_arr = desc_list[0:4]
                 desc = " ".join(desc_arr)
                 self.data[pn][self.DESC] = desc+"-CHN" #modify
-                nano.append((pn,self.data[pn][self.CODE]))
+                nano.append((pn,self.data[pn][self.MODEL]))
                 nano_price.append(self.data[pn][self.PRICE])
             elif desc.find(PC) >= 0:
-                pc.append((pn,self.data[pn][self.CODE]))
+                pc.append((pn,self.data[pn][self.MODEL]))
             else:
-                normal.append((pn,self.data[pn][self.CODE])) #to sorted
+                normal.append((pn,self.data[pn][self.MODEL])) #to sorted
         normal.sort(key=lambda s: s[1]) #according to code
         pc.sort(key=lambda s: s[1])
         nano.sort(key=lambda s: s[1])

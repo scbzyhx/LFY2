@@ -40,16 +40,18 @@ LOG.setLevel(utils.LOG_LEVEL)
 #it is invoice sheet
 #nano is the P/N list of nano,
 #cprice is the contractPrice instance        
-def process_nano(ct,dt,it,nano,cprice):
-    qty = 0
+def process_nano(ct,dt,it,nano,cprice,info):
+    total_qty = 0
     nw = 0
     total_amount = 0
     if len(nano) == 0:
         return
     for pn in nano:
-        qty += cprice.get_qty(pn)
+        qty = cprice.get_qty(pn)
+        
+        total_qty += qty
         desc = cprice.get_desc(pn)
-        nw += cprice.get_nw(pn)
+        nw = cprice.get_nw(pn)
         code = cprice.get_code(pn)
         model = cprice.get_model(pn)
         price = cprice.get_price(pn)
@@ -59,7 +61,7 @@ def process_nano(ct,dt,it,nano,cprice):
         invoice_record = {
             "pn":pn, #useless
             "model":model,
-            "description":desc,
+            "description":info.get_desc(pn),
             "qty":qty,
             "nw":nw,
             "unit_price":price,
@@ -76,7 +78,7 @@ def process_nano(ct,dt,it,nano,cprice):
     }
     
     dt.insert_record(**d_record)
-    ct.insert_record(qty,desc,price,qty*price)
+    ct.insert_record(total_qty,desc,price,total_amount)
 
 ##process normal list or pc list
 def process_other(ct,dt,it,pns,c_price):
@@ -110,6 +112,7 @@ def process_other(ct,dt,it,pns,c_price):
             "total_price":amount
         }
         it.insert_record(**invoice_record)
+        #print invoice_record
         dt.insert_record(**d_record)
         ct.insert_record(qty,desc,price,qty*price)
     return 0
@@ -202,7 +205,7 @@ def main():
     LOG.info("normal=%s",normal_pns)
     LOG.info("pc=%s",pc_pns)
     #first process nano
-    process_nano(ct,dt,it,nanos,c_price)
+    process_nano(ct,dt,it,nanos,c_price,info_db)
     #second normal
     process_other(ct,dt,it,normal_pns,c_price)
         
@@ -236,5 +239,6 @@ def find_contract_id():
             break
             
 if __name__=="__main__":
+    print u"版权所有"
     find_contract_id()
     main()

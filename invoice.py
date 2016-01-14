@@ -50,7 +50,8 @@ class Invoice(object):
                 self.logger.error("Value of (%s) error when insert into invoice: ",self.RECORD_NAME[i])
                 sys.exit(-1)
     		#assert val != None, #directly end
-    		self.sheet[cols[i]] = val
+            #print cols[i],"   ",val
+    	    self.sheet[cols[i]] = val
     	return (0,"ok")
     def remove_empty_rows(self): #copy
         #test 
