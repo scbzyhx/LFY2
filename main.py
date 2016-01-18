@@ -15,13 +15,13 @@ from hawb import Account, HAWB
 import utils
 #TOP=u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\"
 TOP=u".\\workspace\\"
-INPUT=TOP+u"INPUT\\"
+INPUT=TOP+u"IN\\"
 OUTPUT=TOP+u"OUTPUT\\"
 
-INFO_DB = INPUT+u"DB\\规范申报数据库.xlsx"
-TPI_DIR = INPUT+u"TPI\\"
+INFO_DB = TOP+u"DB\\规范申报数据库.xlsx"
+TPI_DIR = INPUT+u"T\\"
 EXPORT = INPUT#+u"出口单价与数量.xlsx"
-PAC_DIR = INPUT+u"PAC\\"
+PAC_DIR = INPUT+u"P\\"
 
 TEMPLATE_FILE = TOP+u"模板.xlsx"
 CONTRACT_ID = None
@@ -72,7 +72,7 @@ def process_nano(ct,dt,it,nano,cprice,info):
             "hs":code,
             "pn":pn, #useless
             "name":desc,
-            "amount":qty,
+            "amount":total_qty,
             "unit_price":price,
             "total_price":total_amount
     }
@@ -138,7 +138,7 @@ def process_others(ct,dt,it,contract_id,pacs,cprice):
     ct.insert_contract_date(date)
     ct.set_total_amount(total_amount)
     ct.set_total_qty(total_qty)
-    
+    #print "total_qty=",total_qty
     it.insert_contract_id(contract_id)
     it.insert_contract_date(date)    
     it.insert_plts(pacs.get_plts())
@@ -148,6 +148,7 @@ def process_others(ct,dt,it,contract_id,pacs,cprice):
     it.set_total_nw(total_nw)
     
     dt.set_total_qty(total_qty)
+    #print "total_qty=",total_qty
     dt.set_total_amount(total_amount)
     
 def save_account(tpis, exports, contracts):
@@ -168,9 +169,12 @@ def save_hawb_total(tpis, contracts):
     for tpi in all_tpi:
         amount = 0
         pns = tpi.get_pns()
+
         for pn in pns:
+            #print pn, "  ",tpi.get_qty(pn), "   ",contracts.get_price(pn)
             amount += tpi.get_qty(pn)*contracts.get_price(pn)
         hawb.insert_record(CONTRACT_ID,tpi.get_hawb(),amount)
+        
     hawb.save()
     
 def main():
@@ -178,6 +182,9 @@ def main():
     tpis_info = TPIs(TPI_DIR)    
     exports = Export(EXPORT)
     pacs_info = PACs(PAC_DIR)
+    
+    #for ttpi in tpis_info.get_all_tpi():
+    #    print ttpi.data
     
     c_price = ContractPrice(tpis_info,exports)
     if not c_price.is_ok():
@@ -220,8 +227,8 @@ def main():
     ##now accouting
     save_account(tpis_info,exports,c_price)
     save_hawb_total(tpis_info,c_price)
-    print u"处理成功!!"
-    utils.pause()
+    print u"处理成功!!!!!!"
+    #utils.pause()
 def find_contract_id():
     files = os.listdir(INPUT)
     for fl in files:

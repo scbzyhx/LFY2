@@ -25,7 +25,7 @@ class HAWB:
             self.sheet = self.wb.active
             #self.row
         self.row = self.sheet.get_highest_row()
-        print self.row
+        #print self.row
         self.row += 1
         if self.row == 1:
             self.insert_head()
@@ -65,7 +65,7 @@ class Account:
             self.sheet = self.wb.active
             #self.row
         self.row = self.sheet.get_highest_row()
-        print self.row
+        #print self.row
         self.row += 1
         if self.row == 1:
             

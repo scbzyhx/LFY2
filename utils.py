@@ -1,11 +1,16 @@
 #
 # -*- coding:utf-8 -*-
 import logging
+import sys
 LOG_LEVEL = logging.INFO
 
 def show_abort():
     pass
     #raw_input(u"Press Enter to abort !!")
+
+#to abort 
+def ABT(s):
+    sys.exit(s)
     
 def pause():
     pass

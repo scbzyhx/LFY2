@@ -78,7 +78,7 @@ class TPI(object):
                     self.data[pn] = [0,0]
                 if uprice[0] != "$":
                     self.logger.debug("pn=%s, unit_price=%s, pty=%s",pn, uprice, qty)
-                    assert 0, "Unit_Price Error, unit price shuold start with $"
+                    util.ABT("Unit_Price Error, unit price shuold start with $")
                     
                 self.data[pn][0] = max(self.data[pn][0],float(uprice[1:]))
                 assert int(qty) > 0
@@ -120,10 +120,13 @@ class TPIs(object):
         for tpi in self.tpi_list:
             tpi.print_sumary()
             keys = tpi.data.keys()
-            #print tpi.data
+           # print tpi.data
             for k in keys:
                 if not self.db.has_key(k):
-                    self.db[k] = tpi.data[k]
+                    ##OR DEEP COPY HERE
+                    self.db[k] = [0,0]
+                    self.db[k][0] = tpi.data[k][0]
+                    self.db[k][1] = tpi.data[k][1]
                 else:
                     self.db[k][1] += tpi.data[k][1]
                     self.db[k][0] = max(tpi.data[k][0], self.db[k][0])
@@ -145,8 +148,10 @@ class TPIs(object):
                 
 if __name__=="__main__":
     #tpi =  TPI("C:\\Users\\yanghaixiang\\Documents\\GitHub\\TPI_VC70160106A07.xls","123")
-    tpis = TPIs(u"C:\\Users\\yanghaixiang\\Desktop\\一键制单\\TPI\\")
+    tpis = TPIs(u".\\workspace\\INPUT\\TPI\\")
     pns  = tpis.get_pns()
+    for tpi in tpis.get_all_tpi():
+        print tpi.data
     for pn in pns:
         print pn,"   ",tpis.get_unit_price(pn),"  ", tpis.get_qty(pn)
         
