@@ -188,16 +188,16 @@ def main():
     
     c_price = ContractPrice(tpis_info,exports)
     if not c_price.is_ok():
-        LOG.error("Error")
+        LOG.error("Error when generating contract price")
         return 
         
     #pacs_info.show_pacs()
     
     if c_price.process_pac(pacs_info) == False:
-        LOG.error("Error When process PACs")
+        LOG.error("Error When processing PACs")
         return
     if c_price.process_infodb(info_db) == False:
-        LOG.error("Error when process info db")
+        LOG.error("Error when processing info db")
         return 
     c_price.show_contract_price()
     

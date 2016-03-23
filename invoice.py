@@ -39,7 +39,7 @@ class Invoice(object):
     	cols = [item+str(self.row) for item in Invoice.RECORD]
     	if self.row >= self.ROW_END:
     	#	print "PN overflow"
-            self.logger.error(u"列数超过了 20 个")
+            self.logger.error(u"行数超过了 20 个")
             #utils.show_abort()
             sys.exit(-1)
     		

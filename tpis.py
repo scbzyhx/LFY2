@@ -37,6 +37,7 @@ class TPI(object):
         self.hawb = s.split("#")[-1].strip()
         #print self.hawb
         assert self.hawb != ""
+        
     def get_hawb(self):
         return self.hawb
         
@@ -47,7 +48,10 @@ class TPI(object):
             return self.data[pn][1]
     
     def _process_tpi(self):
-        wb = YRWorkbook(self.filename)
+        try:
+            wb = YRWorkbook(self.filename)
+        except IOError :
+            utils.ABT(u"处理文件 %s 出错" % self.filename)
         names = wb.get_sheet_names()
         
         for name in names:
@@ -78,10 +82,14 @@ class TPI(object):
                     self.data[pn] = [0,0]
                 if uprice[0] != "$":
                     self.logger.debug("pn=%s, unit_price=%s, pty=%s",pn, uprice, qty)
-                    util.ABT("Unit_Price Error, unit price shuold start with $")
+                    self.logger.warn("Unit_Price Error, unit price shuold start with $")
+                    continue
+                
+                if int(qty) <= 0:
+                    utils.ABT(u"ERROR: TPI 中, 这条记录（pn=%s,qty=%s,unit_price=%s） 有错误" %(pn,qty,uprice))
+                    
                     
                 self.data[pn][0] = max(self.data[pn][0],float(uprice[1:]))
-                assert int(qty) > 0
                 self.data[pn][1] += int(qty)
                 
                 self.logger.debug("pn=%s, unit_price=%f, pty=%d",pn, float(uprice[1:]), int(qty))
@@ -93,7 +101,7 @@ class TPI(object):
 class TPIs(object):
     def __init__(self,dir, **kwargs):
         self.dir = dir
-        self.logger = logging.getLogger(str(self.__class__))
+        self.logger = logging.getLogger("TPIs")
         self.logger.setLevel(utils.LOG_LEVEL)
         self.tpi_list = []
         self.db = {}
@@ -102,19 +110,24 @@ class TPIs(object):
     def _process(self,dir):
         files = os.listdir(dir)
         #print files
+        #print dir
         for fl in files:
-            self.logger.info(fl)
+            #self.logger.info(fl)
             if os.path.isfile(dir+fl) == False:
-                self.logger.info("illegal file %s" % (dir+fl))
+                #self.logger.info("非文件: %s" % (dir+fl))
                 continue
             #filename = 
             #print filename
+            #print "abcd"
             if fl.split('.')[-1] != "xlsx" and fl.split('.')[-1] != "xls":
-                self.logger.info("illegal file %s" % (dir+fl))
+                #print fl
+                self.logger.warn(u"TPI 目录中包含非 Excel 文件: %s    [已忽略]" % (fl))
                 continue
-            #print fl
-            
+            #print fl            
             self.tpi_list.append(TPI(dir+fl,fl.split(".")[0].split("_")[1]))
+            
+        if len(self.tpi_list) == 0:
+            utils.ABT(u"ERROR: TPI 文件缺失！")
             
     def _sumary(self):
         for tpi in self.tpi_list:
@@ -148,7 +161,7 @@ class TPIs(object):
                 
 if __name__=="__main__":
     #tpi =  TPI("C:\\Users\\yanghaixiang\\Documents\\GitHub\\TPI_VC70160106A07.xls","123")
-    tpis = TPIs(u".\\workspace\\INPUT\\TPI\\")
+    tpis = TPIs(u"C:\\Users\\yanghaixiang\\Documents\\GitHub\\LFY2\\workspace\\IN\\T\\")
     pns  = tpis.get_pns()
     for tpi in tpis.get_all_tpi():
         print tpi.data

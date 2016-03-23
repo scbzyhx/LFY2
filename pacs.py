@@ -55,10 +55,9 @@ class PAC:
                 nw = float(nw)
                 gw = float(gw)
                 #print type(pcs)
-                
-                assert pcs != 0
-                assert nw != 0
-                assert gw != 0
+                if pcs <= 0 or nw <= 0 or gw <= 0:
+                    utils.ABT(u"ERROR: PAC 中，这条记录(pn=%s,pcs=%d,nw=%f,gw=%f)存在错误" %(pn,pcs,nw,gw))
+
                 
                 if not end_tag.find(self.END_STR):
                     self._get_plt(wb,self.PLT_COL+str(ind))
@@ -92,7 +91,7 @@ class PAC:
 class PACs(object):
     def __init__(self,dir,**kwargs):
         self.dir = dir
-        self.logger = logging.getLogger(str(self.__class__))
+        self.logger = logging.getLogger("PACs")
         self.logger.setLevel(logging.DEBUG)
         self.pac_list = []
         self.db = {}
@@ -107,17 +106,18 @@ class PACs(object):
         for fl in files:
             #print fl
             if os.path.isfile(dir+fl) == False:
-                self.logger.info("illegal file %s" % (dir+fl))
+                #self.logger.info("illegal file %s" % (dir+fl))
                 continue
             #filename = 
             #print filename
             if fl.split('.')[-1] != "xlsx" and fl.split('.')[-1] != "xls":
-                self.logger.info("illegal file %s" % (dir+fl))
+                self.logger.warn(u"PAC 目录中包含非 Excel 文件: %s    [已忽略]" % (fl))
                 continue
             #print fl
             
             self.pac_list.append(PAC(dir+fl,fl.split(".")[0].split("_")[1]))
-
+        if len(self.pac_list) == 0:
+            utils.ABT(u"ERROR: PAC 文件缺失")
     def _sumary(self):
         for pac  in self.pac_list:
             keys = pac.data.keys()

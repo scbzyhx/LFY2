@@ -24,22 +24,29 @@ class ContractPrice:
         tpi_pns = tpi_info.get_pns()
         ex_pns = ex_info.get_pns()
         
-        if len(tpi_pns) != len(ex_pns) or len(tpi_pns) > MAX_PNS:
+        if len(tpi_pns) > MAX_PNS:
             self.ok = False
-            return 
+            utils.ABT(u"ERROR: P/N 数量超过 %d" % MAX_PNS)
+            
+        if len(tpi_pns) != len(ex_pns):
+            self.ok = False
+            utils.ABT(u"ERROR: 进出口 P/N 不一致") #数目不等
+        
+            
         for pn in tpi_pns:
             in_price = tpi_info.get_unit_price(pn)
             ex_price = ex_info.get_unit_price(pn)
             in_qty = tpi_info.get_qty(pn)
             ex_qty = ex_info.get_qty(pn)
         
-            if ex_price is None or in_qty != ex_qty:
+            if ex_price is None : #or in_qty != ex_qty
                 self.ok = False
                 self.data = {} #clear
+                utils.ABT(u"ERROR: 进出口 P/N 不一致")
                 break
             
             if in_qty != ex_qty:
-                util.ABT(u"进出口 QTY 不相等") #modify it here
+                utils.ABT(u"ERROR: 进出口 QTY 不一致") #modify it here
             
             if in_price >= ex_price:
                 self.data[pn] = {self.PRICE:in_price, self.QTY:in_qty}
@@ -49,13 +56,19 @@ class ContractPrice:
     def process_pac(self,pac_info,**kwargs):
         pns = self.data.keys()
         
+        if len(pns) != len(self.data.keys()):
+            utils.ABT(u"ERROR: TPI 与 PAC P/N 不一致")
+            
         for pn in pns:
             pac_pcs = pac_info.get_pcs(pn)
             pac_nw = pac_info.get_nw(pn)
             pac_gw = pac_info.get_gw(pn)
             #print "pac_pcs=",pac_pcs, " pac_nw=", pac_nw," pac_gw", pac_gw, " qty=",self.data[pn][self.QTY]
+            if pac_pcs is None:
+                utils.ABT(u"ERROR: TPI 与 PAC P/N 不一致！")
             if pac_pcs != self.data[pn][self.QTY]:
                 self.ok = False
+                utils.ABT(u"ERROR: TPI 与 PAC QTY 不一致！")
                 return False
             self.data[pn][self.NW] = pac_nw
             self.data[pn][self.GW] = pac_gw
@@ -74,7 +87,8 @@ class ContractPrice:
             
             if model is None or code is None or desc is None:
                 self.ok = False
-                return False
+                utils.ABT(u"ERROR: 在\"规范申报数据库\"中没有找到 P/N: %s" % pn)
+                #return False
             self.data[pn][self.MODEL] = model
             self.data[pn][self.CODE] = code
             self.data[pn][self.DESC] = desc
@@ -98,15 +112,15 @@ class ContractPrice:
                 desc_arr = desc_list[0:4]
                 desc = " ".join(desc_arr)
                 self.data[pn][self.DESC] = desc+"-CHN" #modify
-                nano.append((pn,self.data[pn][self.MODEL]))
+                nano.append((pn,self.data[pn][self.MODEL],self.data[pn][self.DESC]))
                 nano_price.append(self.data[pn][self.PRICE])
             elif desc.find(PC) >= 0:
-                pc.append((pn,self.data[pn][self.MODEL]))
+                pc.append((pn,self.data[pn][self.MODEL],self.data[pn][self.DESC]))
             else:
-                normal.append((pn,self.data[pn][self.MODEL])) #to sorted
-        normal.sort(key=lambda s: s[1]) #according to code
-        pc.sort(key=lambda s: s[1])
-        nano.sort(key=lambda s: s[1])
+                normal.append((pn,self.data[pn][self.MODEL],self.data[pn][self.DESC])) #to sorted
+        normal.sort(key=lambda s: (s[1],s[2])) #according to code
+        pc.sort(key=lambda s: (s[1],s[2]))
+        nano.sort(key=lambda s: (s[1],s[2]))
         for pn_pair in nano:
             self.data[pn_pair[0]][self.PRICE] = max(nano_price)
         

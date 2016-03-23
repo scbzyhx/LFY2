@@ -2,14 +2,17 @@
 # -*- coding:utf-8
 import logging
 import os
-
+import utils
 from openpyxl import load_workbook
 
 class Export:
     HEADER = "P/N"
     def __init__(self,filename, **kwargs):
         self.filename = filename
-        self.wb = load_workbook(filename)
+        try:
+            self.wb = load_workbook(filename)
+        except IOError:
+            utils.ABT(u"ERROR: 出口文件缺失")
         self.db = {}#[0,0],,,max_price, qty
         self._process()
         
@@ -20,17 +23,22 @@ class Export:
             #print name
             ws = self.wb.get_sheet_by_name(name)
             for row in xrange(1,ws.max_row +1):
-                pn = ws["A"+str(row)].value.strip()
+                
+                pn = ws["A"+str(row)].value
                 qty = ws["B"+str(row)].value
                 uprice = ws["C"+str(row)].value
+                if pn is None or qty is None or uprice is None:
+                    continue
+                pn.strip()
+                
                 
                 if pn == self.HEADER:
                     continue
                     
                 qty = int(qty)
                 uprice = float(uprice)
-                assert qty > 0
-                assert uprice > 0
+                if qty <= 0 or uprice <=0:
+                    utils.ABT(u"ERROR: 出口表中，这条记录(pn=%s,qty=%d,unit_price=%f) 有错误"%(pn,qty,uprice))
                 
                 if not self.db.has_key(pn):
                     self.db[pn] = [0,0] 
